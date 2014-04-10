@@ -1,8 +1,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Si el código se va a compilar en una máquina con Windows */
+/* utilizamos estas funciones falsas */
+#ifdef _WIN32
+
+#include <string.h>
+
+static char buffer[2048];
+
+/* Función readline falsa */
+char* readline(char *prompt)
+{
+  fputs(prompt, stdout);
+  fgets(buffer, 2048, stdin);
+  char *cpy = malloc(strlen(buffer) + 1);
+  strcpy(cpy, buffer);
+  cpy[strlen(cpy) - 1] = '\0';
+  return cpy;
+}
+
+/* Función add_history falsa */
+void add_history(char *unused) {}
+
+/* Si no usamos Windows cargamos las otras cabeceras */
+#else
+
 #include <editline/readline.h>
 #include <editline/history.h>
+
+#endif
 
 int main(int argc, char *agrv[])
 {
@@ -18,9 +45,6 @@ int main(int argc, char *agrv[])
 
     /* Agregamos la entrada al historial */
     add_history(input);
-
-    /* Regresamos lo que el usuario ingresó */
-    printf("%s\n", input);
 
     /* Liberamos el espacio utilizado como entrada */
     free(input);
