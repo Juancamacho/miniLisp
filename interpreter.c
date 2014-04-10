@@ -1,8 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-/* Declara un buffer estático para la entrada del usuario */
-/* la entrada no debe ser mayor a 2048 caracteres */
-static char input[2048];
+#include <editline/readline.h>
+#include <editline/history.h>
 
 int main(int argc, char *agrv[])
 {
@@ -13,15 +13,17 @@ int main(int argc, char *agrv[])
   /* Entramos al ciclo inifnito */
   while (1){
 
-    /* Imprimimos el prompt */
-    fputs("miniLisp> ", stdout);
+    /* Imprimimos el prompt y obtenemos la entrada*/
+    char* input = readline("miniLisp> ");
 
-    /* Leemos la línea que el usuario ingresó */
-    /*   la longitud máxima es 2048 */
-    fgets(input, 2048, stdin);
+    /* Agregamos la entrada al historial */
+    add_history(input);
 
     /* Regresamos lo que el usuario ingresó */
-    printf("%s", input);
+    printf("%s\n", input);
+
+    /* Liberamos el espacio utilizado como entrada */
+    free(input);
     
   }
   
