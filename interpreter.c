@@ -44,12 +44,13 @@ int main(int argc, char *agrv[])
 
   /* Definimos la gramatica */
   mpca_lang(MPC_LANG_DEFAULT,
-	    "numero   : /-?[0-9]+/ ;                    \
-    operador : '+' | '-' | '*' | '/' ;                  \
-    expr     : <numero> | '(' <operador> <expr>+ ')' ;  \
-    miniLisp    : /^/ <operador> <expr>+ /$/ ;             \
-  ",
-  Numero, Operador, Expr, miniLisp);
+	    "                                                     \
+    numero   : /-?[0-9]+(\\.[0-9]+)?/ ;                           \
+    operador : '+' | '-' | '*' | '/' | '%';                       \
+    expr     : <numero> | '(' <operador> <expr>+ ')' ;            \
+    miniLisp : /^/ <operador> <expr>+ /$/ ;                       \
+            ",
+	    Numero, Operador, Expr, miniLisp);
   
   /* Imprime la versión e información de salida */
   puts("miniLisp Version 0.0.0.0.1");
