@@ -9,6 +9,7 @@
 
 static char buffer[2048];
 
+
 /* Función readline falsa */
 char* readline(char *prompt)
 {
@@ -34,6 +35,65 @@ void add_history(char *unused) {}
 
 #endif
 
+/* Función que calcula el número de nodos del AST */
+int numero_de_nodos(mpc_ast_t *t)
+{
+  if (t->children_num == 0)
+    return 1;
+  if (t-> children_num >= 1){
+    int total = 1;
+    for (int i = 0; i < t-> children_num; i++)
+      total = total + numero_de_nodos(t->children[i]);
+    return total;
+  }
+  return 0;
+}
+
+/* Usa la cadena encontrada como operador y se la aplica a los operandos */
+long eval_op(long x, char *op, long y)
+{
+  if (strcmp(op, "+") == 0 || strcmp(op, "add") == 0)
+    return x + y;
+  
+  if (strcmp(op, "-") == 0 || strcmp(op, "sub") == 0)
+    return x - y;
+
+  if (strcmp(op, "*") == 0 || strcmp(op, "mul") == 0)
+    return x * y;
+
+  if (strcmp(op, "/") == 0 || strcmp(op, "div") == 0)
+    return x / y;
+
+  if (strcmp(op, "%") == 0 || strcmp(op, "mod") == 0)
+    return x % y;
+
+  return 0;
+}
+
+/* Función que evalua los nodos del AST */
+long eval(mpc_ast_t *t)
+{
+  /* Si el tag es un número lo devolvemos */
+  if (strstr(t->tag, "numero"))
+    return atoi(t->contents);
+  
+  /* Un operador siempre es el segundo hijo */
+  char * op = t->children[1]->contents;
+
+  /* Guardamos el tercer hijo en 'x' */
+  long x = eval(t->children[2]);
+  
+  /* Iteramos sobre los demas hijos */
+  int i = 3;
+  while (strstr(t->children[i]->tag, "expr")) {
+    x = eval_op(x, op, eval(t->children[i]));
+    i++;
+  }
+  return x;
+}
+
+
+
 int main(int argc, char *agrv[])
 {
   /* Creamos los parsers para la notacion polaca */
@@ -45,8 +105,9 @@ int main(int argc, char *agrv[])
   /* Definimos la gramatica */
   mpca_lang(MPC_LANG_DEFAULT,
 	    "                                                     \
-    numero   : /-?[0-9]+(\\.[0-9]+)?/ ;                           \
-    operador : '+' | '-' | '*' | '/' | '%';                       \
+    numero   : /-?[0-9]+/ ;                                       \
+    operador : '+' | '-' | '*' | '/' | '%' | \"add\" | \"sub\" |  \
+               \"mul\" | \"div\" | \"mod\" ;                      \
     expr     : <numero> | '(' <operador> <expr>+ ')' ;            \
     miniLisp : /^/ <operador> <expr>+ /$/ ;                       \
             ",
@@ -69,10 +130,13 @@ int main(int argc, char *agrv[])
     /* Intentamos parsear la entrada del usuario */
     mpc_result_t r;
     if(mpc_parse("<stdin>", input, miniLisp, &r)){
-      /* Si la entrada es correcta imprimimos el arbol */
-      /* 	de sintaxis abstracta */
-      mpc_ast_print(r.output);
+
+      /* Evaluamos la expresion */
+      long resultado = eval(r.output);
+      printf("%li\n", resultado);
+      
       mpc_ast_delete(r.output);
+      
     } else {
       /* Si no es correcta imprimimos el error */
       mpc_err_print(r.error);
