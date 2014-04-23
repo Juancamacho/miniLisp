@@ -49,6 +49,18 @@ int numero_de_nodos(mpc_ast_t *t)
   return 0;
 }
 
+/* Función que calcula la potencia */
+long potencia(long x, long y)
+{
+  int i = 0;
+  while (i++ < y)
+    x *= y;
+  return x;
+}
+
+/* Función que calcula el mínimo de una lista */
+
+
 /* Usa la cadena encontrada como operador y se la aplica a los operandos */
 long eval_op(long x, char *op, long y)
 {
@@ -67,6 +79,8 @@ long eval_op(long x, char *op, long y)
   if (strcmp(op, "%") == 0 || strcmp(op, "mod") == 0)
     return x % y;
 
+  if (strcmp(op, "^") == 0)
+    return potencia(x, y);
   return 0;
 }
 
@@ -107,7 +121,7 @@ int main(int argc, char *agrv[])
 	    "                                                     \
     numero   : /-?[0-9]+/ ;                                       \
     operador : '+' | '-' | '*' | '/' | '%' | \"add\" | \"sub\" |  \
-               \"mul\" | \"div\" | \"mod\" ;                      \
+               \"mul\" | \"div\" | \"mod\" | '^';                 \
     expr     : <numero> | '(' <operador> <expr>+ ')' ;            \
     miniLisp : /^/ <operador> <expr>+ /$/ ;                       \
             ",
